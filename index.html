@@ -6,32 +6,67 @@
     body {
       background-color: black;
       color: white;
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
+      padding: 20px;
     }
     button {
       padding: 10px 20px;
+      margin: 10px;
       font-size: 16px;
-      margin-top: 20px;
     }
   </style>
 </head>
 <body>
 
 <h1>👻 Jalan Ilmu</h1>
-<p>Kamu terjebak di sekolah angker…</p>
-<p><b>Pertanyaan:</b> Pancasila ada berapa sila?</p>
+<p id="story">Kamu terbangun di sekolah angker...</p>
+<p id="question"></p>
 
-<button onclick="benar()">5</button>
-<button onclick="salah()">4</button>
+<div id="buttons"></div>
 
 <script>
-function benar() {
-  alert("✅ Benar! Kamu selangkah lebih aman...");
+let level = 1;
+
+function loadLevel() {
+  const q = document.getElementById("question");
+  const b = document.getElementById("buttons");
+
+  if (level === 1) {
+    q.innerHTML = "Pancasila ada berapa sila?";
+    b.innerHTML = `
+      <button onclick="wrong()">4</button>
+      <button onclick="correct()">5</button>
+    `;
+  }
+
+  if (level === 2) {
+    q.innerHTML = "Ibu kota Indonesia adalah?";
+    b.innerHTML = `
+      <button onclick="correct()">Jakarta</button>
+      <button onclick="wrong()">Bandung</button>
+    `;
+  }
+
+  if (level === 3) {
+    document.body.innerHTML = `
+      <h1>🎉 SELAMAT</h1>
+      <p>Kamu berhasil keluar dari sekolah angker!</p>
+    `;
+  }
 }
-function salah() {
-  alert("❌ Salah! Suara langkah mendekat...");
+
+function correct() {
+  alert("✅ Benar! Kamu selamat sementara...");
+  level++;
+  loadLevel();
 }
+
+function wrong() {
+  alert("❌ Salah... suara langkah mendekat!");
+}
+
+loadLevel();
 </script>
 
 </body>
