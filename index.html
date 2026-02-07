@@ -1,43 +1,43 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Jejak Ilmu</title>
+<title>Jejak Ilmu: Sekolah Terkunci</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body {
+body{
   margin:0;
-  font-family:Arial;
-  background:black;
-  color:white;
+  font-family:Arial, sans-serif;
+  color:#eee;
+  background:#000;
+  background-image: radial-gradient(#111,#000);
   text-align:center;
-  background-image: radial-gradient(#222, #000);
 }
-.screen {display:none; padding:20px;}
-.active {display:block;}
+.screen{display:none;padding:20px;}
+.active{display:block}
 
 button{
   width:100%;
-  padding:15px;
+  padding:14px;
   margin-top:10px;
-  background:darkred;
+  font-size:16px;
+  background:#7a0000;
   color:white;
   border:none;
   border-radius:10px;
-  font-size:16px;
 }
 
 .card{
-  background:#111;
+  background:rgba(10,10,10,0.9);
   padding:20px;
   border-radius:10px;
   animation:fade 1s;
 }
 
 @keyframes fade{
-  from{opacity:0}
-  to{opacity:1}
+  from{opacity:0;transform:scale(0.95)}
+  to{opacity:1;transform:scale(1)}
 }
 
 #jumpscare{
@@ -50,10 +50,18 @@ button{
   z-index:999;
 }
 
-#jumpscare img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
+#jumpscare div{
+  font-size:40px;
+  color:red;
+  animation:shake 0.3s infinite;
+}
+
+@keyframes shake{
+  0%{transform:translate(0)}
+  25%{transform:translate(-10px,5px)}
+  50%{transform:translate(10px,-5px)}
+  75%{transform:translate(-10px,-5px)}
+  100%{transform:translate(0)}
 }
 </style>
 </head>
@@ -61,13 +69,14 @@ button{
 <body>
 
 <div id="start" class="screen active">
-  <h1>👁️ JEJAK ILMU</h1>
-  <p>Belajar atau terjebak selamanya...</p>
-  <button onclick="startGame()">MULAI</button>
+  <h1>🏫 JEJAK ILMU</h1>
+  <p>Aku terbangun di sekolah tua. Pintu terkunci.</p>
+  <p>Untuk keluar, aku harus menemukan <b>kunci</b> dengan menjawab <b>15 soal</b>.</p>
+  <button onclick="startGame()">MASUK SEKOLAH</button>
 </div>
 
 <div id="game" class="screen">
-  <h2 id="info"></h2>
+  <h3 id="status"></h3>
   <div class="card">
     <p id="story"></p>
     <p id="question"></p>
@@ -75,58 +84,69 @@ button{
   </div>
 </div>
 
-<div id="end" class="screen">
-  <h1>🎉 KAMU SELAMAT</h1>
-  <p>Kamu berhasil keluar.</p>
+<div id="goodEnd" class="screen">
+  <h1>🔑 ENDING SELAMAT</h1>
+  <p>Aku menemukan kunci dan berhasil keluar dari sekolah itu.</p>
+  <p>Cahaya matahari menyelamatkanku.</p>
   <button onclick="location.reload()">MAIN LAGI</button>
 </div>
 
-<div id="jumpscare">
-  <img src="https://i.imgur.com/9ZQZQZC.png">
+<div id="badEnd" class="screen">
+  <h1>☠️ ENDING TERJEBAK</h1>
+  <p>Pintu tertutup selamanya.</p>
+  <p>Aku menjadi bagian dari sekolah ini…</p>
+  <button onclick="location.reload()">COBA LAGI</button>
 </div>
 
-<audio id="sound">
-  <source src="https://www.soundjay.com/human/scream-01.mp3">
+<div id="jumpscare">
+  <div>👁️</div>
+</div>
+
+<audio id="cricket" loop>
+  <source src="https://www.soundjay.com/nature/sounds/crickets-1.mp3">
+</audio>
+
+<audio id="scare">
+  <source src="https://www.soundjay.com/human/sounds/scream-02.mp3">
 </audio>
 
 <script>
-const levelData=[
- {s:"Kelas gelap menyambutmu.",q:"5 + 7 = ?",a:["10","12","14"],c:1},
- {s:"Pintu berderit.",q:"10 × 3 = ?",a:["30","20","40"],c:0},
- {s:"Bayangan bergerak.",q:"Ibukota Indonesia?",a:["Bandung","Jakarta","Surabaya"],c:1},
- {s:"Buku jatuh.",q:"12 × 4 = ?",a:["48","44","52"],c:0},
- {s:"Bisikan terdengar.",q:"Sila ke-3 Pancasila?",a:["Persatuan Indonesia","Kemanusiaan","Keadilan"],c:0},
- {s:"Lampu mati.",q:"20 : 4 = ?",a:["6","5","4"],c:1},
- {s:"Langkah kaki.",q:"Sinonim Indah?",a:["Jelek","Cantik","Buruk"],c:1},
- {s:"Lorong sempit.",q:"15 + 10 = ?",a:["20","30","25"],c:2},
- {s:"Pintu terkunci.",q:"Hewan berinsang?",a:["Ikan","Kucing","Ayam"],c:0},
- {s:"Suara tawa.",q:"100 : 10 = ?",a:["5","10","20"],c:1},
- {s:"Bayangan besar.",q:"Benda cair?",a:["Tetap","Berubah","Keras"],c:1},
- {s:"Napas berat.",q:"5 × 6 = ?",a:["30","20","35"],c:0},
- {s:"Dinding retak.",q:"Antonim Gelap?",a:["Hitam","Terang","Suram"],c:1},
- {s:"Pintu terakhir.",q:"2² = ?",a:["2","4","6"],c:1},
- {s:"Kebebasan menunggu.",q:"Tujuan teks prosedur?",a:["Menghibur","Langkah-langkah","Cerita"],c:1}
+const levels=[
+ {s:"Aku berjalan di lorong kelas yang gelap.",q:"Jika 3² + 4² = ?",a:["25","49","13"],c:0},
+ {s:"Pintu kelas terkunci rapat.",q:"Akar dari 144 adalah?",a:["11","12","14"],c:1},
+ {s:"Bayangan bergerak di jendela.",q:"Sinonim 'konsekuensi'?",a:["Akibat","Tujuan","Sebab"],c:0},
+ {s:"Suara langkah mengikutiku.",q:"15 × 8 − 20 = ?",a:["100","120","140"],c:0},
+ {s:"Lampu berkedip.",q:"Ibukota Australia?",a:["Sydney","Canberra","Melbourne"],c:1},
+ {s:"Aku menemukan papan tulis berdebu.",q:"Rumus luas lingkaran?",a:["πr²","2πr","r²"],c:0},
+ {s:"Bisikan menyebut namaku.",q:"Kata baku dari 'resiko'?",a:["Risiko","Resiko","Resiqo"],c:0},
+ {s:"Tangga menuju lantai atas.",q:"Jika x=5, maka 2x²=?",a:["50","25","20"],c:0},
+ {s:"Jam sekolah berhenti.",q:"Planet terbesar?",a:["Mars","Bumi","Jupiter"],c:2},
+ {s:"Angin dingin berhembus.",q:"Sila ke-2 Pancasila?",a:["Persatuan","Kemanusiaan","Keadilan"],c:1},
+ {s:"Aku hampir menemukan kunci.",q:"Volume kubus sisi 4?",a:["16","64","32"],c:1},
+ {s:"Suara kursi diseret.",q:"Antonim 'abstrak'?",a:["Nyata","Imajinatif","Samar"],c:0},
+ {s:"Pintu terakhir terlihat.",q:"FPB 24 dan 36?",a:["6","12","18"],c:1},
+ {s:"Tanganku gemetar.",q:"Kalimat prosedur bertujuan?",a:["Menghibur","Memberi langkah","Meyakinkan"],c:1},
+ {s:"Kunci ada di depanku.",q:"Jika 2⁵ = ?",a:["16","32","64"],c:1}
 ];
 
-let lvl=0,life=3,time=15,timer;
+let lvl=0,life=5;
 
 function startGame(){
  document.getElementById("start").classList.remove("active");
  document.getElementById("game").classList.add("active");
+ document.getElementById("cricket").play();
  load();
 }
 
 function load(){
- if(lvl>=levelData.length){
+ if(lvl>=levels.length){
   document.getElementById("game").classList.remove("active");
-  document.getElementById("end").classList.add("active");
+  document.getElementById("goodEnd").classList.add("active");
   return;
  }
- clearInterval(timer);
- time=15;
- let L=levelData[lvl];
- document.getElementById("info").innerText=
- `LEVEL ${lvl+1} ❤️${life} ⏱️${time}`;
+ let L=levels[lvl];
+ document.getElementById("status").innerText=
+ `SOAL ${lvl+1}/15 | ❤️ ${life}`;
  document.getElementById("story").innerText=L.s;
  document.getElementById("question").innerText=L.q;
  let a=document.getElementById("answers");
@@ -137,35 +157,29 @@ function load(){
   b.onclick=()=>cek(i);
   a.appendChild(b);
  });
- timer=setInterval(()=>{
-  time--;
-  document.getElementById("info").innerText=
-  `LEVEL ${lvl+1} ❤️${life} ⏱️${time}`;
-  if(time<=0) kalah();
- },1000);
 }
 
 function cek(i){
- clearInterval(timer);
- if(i===levelData[lvl].c){
+ if(i===levels[lvl].c){
   lvl++; load();
- } else kalah();
-}
-
-function kalah(){
- life--;
- jumpscare();
- if(life<=0){
-  setTimeout(()=>{alert("GAME OVER");location.reload();},1200);
- } else setTimeout(load,1200);
+ }else{
+  life--;
+  jumpscare();
+  if(life<=0){
+   setTimeout(()=>{
+    document.getElementById("game").classList.remove("active");
+    document.getElementById("badEnd").classList.add("active");
+   },800);
+  }
+ }
 }
 
 function jumpscare(){
  document.getElementById("jumpscare").style.display="flex";
- document.getElementById("sound").play();
+ document.getElementById("scare").play();
  setTimeout(()=>{
   document.getElementById("jumpscare").style.display="none";
- },1000);
+ },600);
 }
 </script>
 
