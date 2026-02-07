@@ -2,66 +2,65 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Jejak Ilmu: Sekolah Terkunci</title>
+<title>Jejak Ilmu – Sekolah Terkunci</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  color:#eee;
-  background:#000;
-  background-image: radial-gradient(#111,#000);
-  text-align:center;
+ margin:0;
+ font-family:Arial;
+ background:black;
+ color:#eee;
+ text-align:center;
 }
-.screen{display:none;padding:20px;}
+.screen{display:none;padding:20px}
 .active{display:block}
 
 button{
-  width:100%;
-  padding:14px;
-  margin-top:10px;
-  font-size:16px;
-  background:#7a0000;
-  color:white;
-  border:none;
-  border-radius:10px;
+ width:100%;
+ padding:14px;
+ margin-top:10px;
+ font-size:16px;
+ background:#7b0000;
+ color:white;
+ border:none;
+ border-radius:10px;
 }
 
 .card{
-  background:rgba(10,10,10,0.9);
-  padding:20px;
-  border-radius:10px;
-  animation:fade 1s;
+ background:#111;
+ padding:20px;
+ border-radius:10px;
+ animation:fade 1s;
 }
 
 @keyframes fade{
-  from{opacity:0;transform:scale(0.95)}
-  to{opacity:1;transform:scale(1)}
+ from{opacity:0;transform:scale(.95)}
+ to{opacity:1;transform:scale(1)}
 }
 
 #jumpscare{
-  position:fixed;
-  inset:0;
-  background:black;
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:999;
+ position:fixed;
+ inset:0;
+ background:black;
+ display:none;
+ justify-content:center;
+ align-items:center;
+ z-index:999;
 }
 
 #jumpscare div{
-  font-size:40px;
-  color:red;
-  animation:shake 0.3s infinite;
+ font-size:50px;
+ color:red;
+ animation:shake .3s infinite;
 }
 
 @keyframes shake{
-  0%{transform:translate(0)}
-  25%{transform:translate(-10px,5px)}
-  50%{transform:translate(10px,-5px)}
-  75%{transform:translate(-10px,-5px)}
-  100%{transform:translate(0)}
+ 0%{transform:translate(0)}
+ 25%{transform:translate(-10px,5px)}
+ 50%{transform:translate(10px,-5px)}
+ 75%{transform:translate(-10px,-5px)}
+ 100%{transform:translate(0)}
 }
 </style>
 </head>
@@ -69,107 +68,148 @@ button{
 <body>
 
 <div id="start" class="screen active">
-  <h1>🏫 JEJAK ILMU</h1>
-  <p>Aku terbangun di sekolah tua. Pintu terkunci.</p>
-  <p>Untuk keluar, aku harus menemukan <b>kunci</b> dengan menjawab <b>15 soal</b>.</p>
-  <button onclick="startGame()">MASUK SEKOLAH</button>
+ <h1>🏫 JEJAK ILMU</h1>
+ <p>Aku terjebak di sekolah tua.</p>
+ <p>Cari <b>3 kunci</b> untuk keluar.</p>
+ <button onclick="start()">MASUK</button>
 </div>
 
 <div id="game" class="screen">
-  <h3 id="status"></h3>
-  <div class="card">
-    <p id="story"></p>
-    <p id="question"></p>
-    <div id="answers"></div>
-  </div>
+ <h3 id="status"></h3>
+ <div class="card">
+  <p id="room"></p>
+  <p id="story"></p>
+  <p id="question"></p>
+  <div id="answers"></div>
+  <div id="map"></div>
+ </div>
 </div>
 
-<div id="goodEnd" class="screen">
-  <h1>🔑 ENDING SELAMAT</h1>
-  <p>Aku menemukan kunci dan berhasil keluar dari sekolah itu.</p>
-  <p>Cahaya matahari menyelamatkanku.</p>
-  <button onclick="location.reload()">MAIN LAGI</button>
+<div id="good" class="screen">
+ <h1>🔑 ENDING SELAMAT</h1>
+ <p>Aku berhasil keluar dari sekolah.</p>
+ <button onclick="location.reload()">MAIN LAGI</button>
 </div>
 
-<div id="badEnd" class="screen">
-  <h1>☠️ ENDING TERJEBAK</h1>
-  <p>Pintu tertutup selamanya.</p>
-  <p>Aku menjadi bagian dari sekolah ini…</p>
-  <button onclick="location.reload()">COBA LAGI</button>
+<div id="bad" class="screen">
+ <h1>☠️ TERJEBAK SELAMANYA</h1>
+ <p>Sekolah ini menelanku.</p>
+ <button onclick="location.reload()">COBA LAGI</button>
 </div>
 
-<div id="jumpscare">
-  <div>👁️</div>
-</div>
+<div id="jumpscare"><div>👁️</div></div>
 
-<audio id="cricket" loop>
-  <source src="https://www.soundjay.com/nature/sounds/crickets-1.mp3">
+<audio id="bg" loop>
+ <source src="https://www.soundjay.com/nature/sounds/crickets-1.mp3">
 </audio>
 
 <audio id="scare">
-  <source src="https://www.soundjay.com/human/sounds/scream-02.mp3">
+ <source src="https://www.soundjay.com/human/sounds/scream-02.mp3">
 </audio>
 
 <script>
-const levels=[
- {s:"Aku berjalan di lorong kelas yang gelap.",q:"Jika 3² + 4² = ?",a:["25","49","13"],c:0},
- {s:"Pintu kelas terkunci rapat.",q:"Akar dari 144 adalah?",a:["11","12","14"],c:1},
- {s:"Bayangan bergerak di jendela.",q:"Sinonim 'konsekuensi'?",a:["Akibat","Tujuan","Sebab"],c:0},
- {s:"Suara langkah mengikutiku.",q:"15 × 8 − 20 = ?",a:["100","120","140"],c:0},
- {s:"Lampu berkedip.",q:"Ibukota Australia?",a:["Sydney","Canberra","Melbourne"],c:1},
- {s:"Aku menemukan papan tulis berdebu.",q:"Rumus luas lingkaran?",a:["πr²","2πr","r²"],c:0},
- {s:"Bisikan menyebut namaku.",q:"Kata baku dari 'resiko'?",a:["Risiko","Resiko","Resiqo"],c:0},
- {s:"Tangga menuju lantai atas.",q:"Jika x=5, maka 2x²=?",a:["50","25","20"],c:0},
- {s:"Jam sekolah berhenti.",q:"Planet terbesar?",a:["Mars","Bumi","Jupiter"],c:2},
- {s:"Angin dingin berhembus.",q:"Sila ke-2 Pancasila?",a:["Persatuan","Kemanusiaan","Keadilan"],c:1},
- {s:"Aku hampir menemukan kunci.",q:"Volume kubus sisi 4?",a:["16","64","32"],c:1},
- {s:"Suara kursi diseret.",q:"Antonim 'abstrak'?",a:["Nyata","Imajinatif","Samar"],c:0},
- {s:"Pintu terakhir terlihat.",q:"FPB 24 dan 36?",a:["6","12","18"],c:1},
- {s:"Tanganku gemetar.",q:"Kalimat prosedur bertujuan?",a:["Menghibur","Memberi langkah","Meyakinkan"],c:1},
- {s:"Kunci ada di depanku.",q:"Jika 2⁵ = ?",a:["16","32","64"],c:1}
-];
+let life=5, keys=0;
 
-let lvl=0,life=5;
+const rooms={
+ "Gerbang":{
+  s:"Aku berdiri di gerbang sekolah yang terkunci.",
+  q:"3² + 4² = ?",
+  a:["25","49","13"], c:0, key:true,
+  next:["Lorong"]
+ },
+ "Lorong":{
+  s:"Lorong panjang dan gelap.",
+  q:"Akar dari 196?",
+  a:["12","14","16"], c:1,
+  next:["Kelas","Perpustakaan"]
+ },
+ "Kelas":{
+  s:"Kursi berantakan.",
+  q:"15 × 8 = ?",
+  a:["120","100","130"], c:0, key:true,
+  next:["Lorong"]
+ },
+ "Perpustakaan":{
+  s:"Rak buku berderit.",
+  q:"Sinonim 'abstrak'?",
+  a:["Nyata","Samar","Jelas"], c:1,
+  next:["Lorong","Lab"]
+ },
+ "Lab":{
+  s:"Alat praktikum pecah.",
+  q:"Planet terbesar?",
+  a:["Mars","Jupiter","Venus"], c:1, key:true,
+  next:["Tangga"]
+ },
+ "Tangga":{
+  s:"Tangga menuju pintu keluar.",
+  q:"FPB 24 dan 36?",
+  a:["6","12","18"], c:1,
+  next:["Pintu"]
+ },
+ "Pintu":{
+  s:"Pintu keluar di depanku.",
+  q:"",
+  a:[],
+  next:[]
+ }
+};
 
-function startGame(){
+let room="Gerbang";
+
+function start(){
  document.getElementById("start").classList.remove("active");
  document.getElementById("game").classList.add("active");
- document.getElementById("cricket").play();
+ document.getElementById("bg").play();
  load();
 }
 
 function load(){
- if(lvl>=levels.length){
-  document.getElementById("game").classList.remove("active");
-  document.getElementById("goodEnd").classList.add("active");
-  return;
- }
- let L=levels[lvl];
+ let R=rooms[room];
  document.getElementById("status").innerText=
- `SOAL ${lvl+1}/15 | ❤️ ${life}`;
- document.getElementById("story").innerText=L.s;
- document.getElementById("question").innerText=L.q;
+ `❤️ ${life} | 🔑 ${keys}/3`;
+ document.getElementById("room").innerText=
+ `📍 ${room}`;
+ document.getElementById("story").innerText=R.s;
+ document.getElementById("question").innerText=R.q;
  let a=document.getElementById("answers");
  a.innerHTML="";
- L.a.forEach((x,i)=>{
+ R.a.forEach((x,i)=>{
   let b=document.createElement("button");
   b.innerText=x;
   b.onclick=()=>cek(i);
   a.appendChild(b);
  });
+ let m=document.getElementById("map");
+ m.innerHTML="";
+ R.next.forEach(n=>{
+  let b=document.createElement("button");
+  b.innerText="➡️ "+n;
+  b.onclick=()=>{room=n;load();}
+  m.appendChild(b);
+ });
+ if(room==="Pintu"){
+  if(keys>=3){
+   document.getElementById("game").classList.remove("active");
+   document.getElementById("good").classList.add("active");
+  }else{
+   document.getElementById("story").innerText=
+   "Pintu terkunci. Kuncinya belum cukup.";
+  }
+ }
 }
 
 function cek(i){
- if(i===levels[lvl].c){
-  lvl++; load();
+ let R=rooms[room];
+ if(i===R.c){
+  if(R.key){ keys++; R.key=false; }
+  load();
  }else{
   life--;
   jumpscare();
   if(life<=0){
-   setTimeout(()=>{
-    document.getElementById("game").classList.remove("active");
-    document.getElementById("badEnd").classList.add("active");
-   },800);
+   document.getElementById("game").classList.remove("active");
+   document.getElementById("bad").classList.add("active");
   }
  }
 }
