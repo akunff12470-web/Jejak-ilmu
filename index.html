@@ -1,122 +1,98 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<title>Jejak Ilmu</title>
-<style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: black;
-  color: white;
-  text-align: center;
-}
-#game, #jumpscare {
-  display: none;
-}
-button {
-  padding: 10px 20px;
-  font-size: 18px;
-  cursor: pointer;
-}
-#jumpscare {
-  position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background:black;
-}
-#jumpscare img {
-  width:100%;
-  height:100%;
-  object-fit: cover;
-}
-</style>
-</head>
-
-<body>
-
-<div id="menu">
-  <h1>👁️ JEJAK ILMU 👁️</h1>
-  <p>Game Horor Edukasi</p>
-  <button onclick="startGame()">Mulai Game</button>
-</div>
-
-<div id="game">
-  <h2 id="levelText"></h2>
-  <p id="question"></p>
-  <div id="answers"></div>
-</div>
-
-<div id="jumpscare">
-  <img src="https://i.imgur.com/8Km9tLL.png">
-</div>
-
-<audio id="scream" src="https://www.myinstants.com/media/sounds/scream.mp3"></audio>
-
-<script>
-let level = 1;
-
-const questions = [
-  {q:"2 + 3 = ?", a:["4","5","6"], c:1},
-  {q:"Sinonim pintar?", a:["Bodoh","Cerdas","Lemah"], c:1},
-  {q:"5 x 4 = ?", a:["20","10","15"], c:0},
-  {q:"Ibu kota Indonesia?", a:["Bandung","Jakarta","Surabaya"], c:1},
-  {q:"Organ pernapasan?", a:["Paru-paru","Jantung","Hati"], c:0},
-  {q:"10 : 2 = ?", a:["3","5","6"], c:1},
-  {q:"Sinonim gelap?", a:["Terang","Hitam","Sunyi"], c:1},
-  {q:"Planet ke-3?", a:["Mars","Bumi","Venus"], c:1},
-  {q:"7 + 8 = ?", a:["14","15","16"], c:1},
-  {q:"Hewan herbivora?", a:["Singa","Sapi","Serigala"], c:1},
-  {q:"Air membeku pada?", a:["0°C","50°C","100°C"], c:0},
-  {q:"Presiden pertama RI?", a:["Habibie","Soekarno","Jokowi"], c:1},
-  {q:"12 x 2 = ?", a:["22","24","26"], c:1},
-  {q:"Alat indra melihat?", a:["Telinga","Hidung","Mata"], c:2},
-  {q:"Pancasila sila ke-1?", a:["Kemanusiaan","Ketuhanan","Persatuan"], c:1}
+ <script>
+const levels = [
+ {story:"Kamu terbangun di kelas gelap.",q:"5 + 7 = ?",a:["10","12","14"],c:1},
+ {story:"Pintu berderit pelan.",q:"10 x 3 = ?",a:["30","20","40"],c:0},
+ {story:"Bayangan menatapmu.",q:"Ibukota Indonesia?",a:["Bandung","Jakarta","Surabaya"],c:1},
+ {story:"Buku jatuh sendiri.",q:"12 x 4 = ?",a:["48","44","52"],c:0},
+ {story:"Bisikan terdengar.",q:"Sila ke-3 Pancasila?",a:["Persatuan Indonesia","Kemanusiaan","Keadilan"],c:0},
+ {story:"Lampu mati.",q:"20 : 4 = ?",a:["6","5","4"],c:1},
+ {story:"Langkah kaki mendekat.",q:"Sinonim 'Indah'?",a:["Jelek","Cantik","Buruk"],c:1},
+ {story:"Dinding retak.",q:"15 + 10 = ?",a:["20","30","25"],c:2},
+ {story:"Pintu terkunci.",q:"Hewan bernapas dengan insang?",a:["Ikan","Kucing","Ayam"],c:0},
+ {story:"Suara tertawa.",q:"100 : 10 = ?",a:["5","10","20"],c:1},
+ {story:"Bayangan besar muncul.",q:"Benda cair bentuknya?",a:["Tetap","Berubah","Keras"],c:1},
+ {story:"Napasmu berat.",q:"5 x 6 = ?",a:["30","20","35"],c:0},
+ {story:"Dinding bernoda merah.",q:"Antonim 'Gelap'?",a:["Hitam","Terang","Suram"],c:1},
+ {story:"Pintu terakhir.",q:"2² = ?",a:["2","4","6"],c:1},
+ {story:"Jawabanmu penentu.",q:"Tujuan teks prosedur?",a:["Menghibur","Menjelaskan langkah","Menceritakan"],c:1}
 ];
 
-function startGame(){
-  document.getElementById("menu").style.display="none";
-  document.getElementById("game").style.display="block";
+let level = 0;
+let life = 3;
+let time = 15;
+let timer;
+
+function startGame() {
+  document.getElementById("start").classList.remove("active");
+  document.getElementById("game").classList.add("active");
   loadLevel();
 }
 
-function loadLevel(){
-  if(level > 15){
-    alert("KAMU BERHASIL KABUR DARI SEKOLAH TERLARANG!");
-    location.reload();
+function loadLevel() {
+  if (level >= levels.length) {
+    document.getElementById("game").classList.remove("active");
+    document.getElementById("end").classList.add("active");
+    return;
   }
-  document.getElementById("levelText").innerText="Level "+level;
-  document.getElementById("question").innerText=questions[level-1].q;
 
-  let ansDiv = document.getElementById("answers");
-  ansDiv.innerHTML="";
-  questions[level-1].a.forEach((ans,i)=>{
-    let btn=document.createElement("button");
-    btn.innerText=ans;
-    btn.onclick=()=>checkAnswer(i);
-    ansDiv.appendChild(btn);
-    ansDiv.appendChild(document.createElement("br"));
+  clearInterval(timer);
+  time = 15;
+
+  const L = levels[level];
+  document.getElementById("levelTitle").innerText =
+    `Level ${level+1} | ❤️ ${life} | ⏱️ ${time}s`;
+  document.getElementById("story").innerText = L.story;
+  document.getElementById("question").innerText = L.q;
+
+  const ans = document.getElementById("answers");
+  ans.innerHTML = "";
+  L.a.forEach((x,i)=>{
+    const b=document.createElement("button");
+    b.innerText=x;
+    b.onclick=()=>check(i);
+    ans.appendChild(b);
   });
+
+  timer = setInterval(()=>{
+    time--;
+    document.getElementById("levelTitle").innerText =
+      `Level ${level+1} | ❤️ ${life} | ⏱️ ${time}s`;
+
+    if(time<=0){
+      clearInterval(timer);
+      lose();
+    }
+  },1000);
 }
 
-function checkAnswer(i){
-  if(i===questions[level-1].c){
+function check(i){
+  clearInterval(timer);
+  if(i===levels[level].c){
     level++;
     loadLevel();
   } else {
-    jumpscare();
+    lose();
+  }
+}
+
+function lose(){
+  life--;
+  jumpscare();
+  if(life<=0){
+    setTimeout(()=>{
+      alert("GAME OVER\nBelajarlah lebih baik...");
+      location.reload();
+    },1200);
+  } else {
+    setTimeout(loadLevel,1200);
   }
 }
 
 function jumpscare(){
-  document.getElementById("jumpscare").style.display="block";
-  document.getElementById("scream").play();
+  document.getElementById("jumpscare").style.display="flex";
+  document.getElementById("scareSound").play();
   setTimeout(()=>{
-    alert("KAMU GAGAL!");
-    location.reload();
-  },1500);
+    document.getElementById("jumpscare").style.display="none";
+  },1000);
 }
 </script>
-
-</body>
-</html>
