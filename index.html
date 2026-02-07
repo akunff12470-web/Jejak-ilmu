@@ -1,120 +1,171 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <title>Jejak Ilmu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: black;
-  color: white;
-  text-align: center;
-}
-#game, #jumpscare {
-  display: none;
-}
-button {
-  padding: 10px 20px;
-  font-size: 18px;
-  cursor: pointer;
-}
-#jumpscare {
-  position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
+  margin:0;
+  font-family:Arial;
   background:black;
+  color:white;
+  text-align:center;
+  background-image: radial-gradient(#222, #000);
 }
-#jumpscare img {
+.screen {display:none; padding:20px;}
+.active {display:block;}
+
+button{
+  width:100%;
+  padding:15px;
+  margin-top:10px;
+  background:darkred;
+  color:white;
+  border:none;
+  border-radius:10px;
+  font-size:16px;
+}
+
+.card{
+  background:#111;
+  padding:20px;
+  border-radius:10px;
+  animation:fade 1s;
+}
+
+@keyframes fade{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+#jumpscare{
+  position:fixed;
+  inset:0;
+  background:black;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+#jumpscare img{
   width:100%;
   height:100%;
-  object-fit: cover;
+  object-fit:cover;
 }
 </style>
 </head>
 
 <body>
 
-<div id="menu">
-  <h1>👁️ JEJAK ILMU 👁️</h1>
-  <p>Game Horor Edukasi</p>
-  <button onclick="startGame()">Mulai Game</button>
+<div id="start" class="screen active">
+  <h1>👁️ JEJAK ILMU</h1>
+  <p>Belajar atau terjebak selamanya...</p>
+  <button onclick="startGame()">MULAI</button>
 </div>
 
-<div id="game">
-  <h2 id="levelText"></h2>
-  <p id="question"></p>
-  <div id="answers"></div>
+<div id="game" class="screen">
+  <h2 id="info"></h2>
+  <div class="card">
+    <p id="story"></p>
+    <p id="question"></p>
+    <div id="answers"></div>
+  </div>
+</div>
+
+<div id="end" class="screen">
+  <h1>🎉 KAMU SELAMAT</h1>
+  <p>Kamu berhasil keluar.</p>
+  <button onclick="location.reload()">MAIN LAGI</button>
 </div>
 
 <div id="jumpscare">
-  <img src="https://i.imgur.com/8Km9tLL.png">
+  <img src="https://i.imgur.com/9ZQZQZC.png">
 </div>
 
-<audio id="scream" src="https://www.myinstants.com/media/sounds/scream.mp3"></audio>
+<audio id="sound">
+  <source src="https://www.soundjay.com/human/scream-01.mp3">
+</audio>
 
 <script>
-let level = 1;
-
-const questions = [
-  {q:"2 + 3 = ?", a:["4","5","6"], c:1},
-  {q:"Sinonim pintar?", a:["Bodoh","Cerdas","Lemah"], c:1},
-  {q:"5 x 4 = ?", a:["20","10","15"], c:0},
-  {q:"Ibu kota Indonesia?", a:["Bandung","Jakarta","Surabaya"], c:1},
-  {q:"Organ pernapasan?", a:["Paru-paru","Jantung","Hati"], c:0},
-  {q:"10 : 2 = ?", a:["3","5","6"], c:1},
-  {q:"Sinonim gelap?", a:["Terang","Hitam","Sunyi"], c:1},
-  {q:"Planet ke-3?", a:["Mars","Bumi","Venus"], c:1},
-  {q:"7 + 8 = ?", a:["14","15","16"], c:1},
-  {q:"Hewan herbivora?", a:["Singa","Sapi","Serigala"], c:1},
-  {q:"Air membeku pada?", a:["0°C","50°C","100°C"], c:0},
-  {q:"Presiden pertama RI?", a:["Habibie","Soekarno","Jokowi"], c:1},
-  {q:"12 x 2 = ?", a:["22","24","26"], c:1},
-  {q:"Alat indra melihat?", a:["Telinga","Hidung","Mata"], c:2},
-  {q:"Pancasila sila ke-1?", a:["Kemanusiaan","Ketuhanan","Persatuan"], c:1}
+const levelData=[
+ {s:"Kelas gelap menyambutmu.",q:"5 + 7 = ?",a:["10","12","14"],c:1},
+ {s:"Pintu berderit.",q:"10 × 3 = ?",a:["30","20","40"],c:0},
+ {s:"Bayangan bergerak.",q:"Ibukota Indonesia?",a:["Bandung","Jakarta","Surabaya"],c:1},
+ {s:"Buku jatuh.",q:"12 × 4 = ?",a:["48","44","52"],c:0},
+ {s:"Bisikan terdengar.",q:"Sila ke-3 Pancasila?",a:["Persatuan Indonesia","Kemanusiaan","Keadilan"],c:0},
+ {s:"Lampu mati.",q:"20 : 4 = ?",a:["6","5","4"],c:1},
+ {s:"Langkah kaki.",q:"Sinonim Indah?",a:["Jelek","Cantik","Buruk"],c:1},
+ {s:"Lorong sempit.",q:"15 + 10 = ?",a:["20","30","25"],c:2},
+ {s:"Pintu terkunci.",q:"Hewan berinsang?",a:["Ikan","Kucing","Ayam"],c:0},
+ {s:"Suara tawa.",q:"100 : 10 = ?",a:["5","10","20"],c:1},
+ {s:"Bayangan besar.",q:"Benda cair?",a:["Tetap","Berubah","Keras"],c:1},
+ {s:"Napas berat.",q:"5 × 6 = ?",a:["30","20","35"],c:0},
+ {s:"Dinding retak.",q:"Antonim Gelap?",a:["Hitam","Terang","Suram"],c:1},
+ {s:"Pintu terakhir.",q:"2² = ?",a:["2","4","6"],c:1},
+ {s:"Kebebasan menunggu.",q:"Tujuan teks prosedur?",a:["Menghibur","Langkah-langkah","Cerita"],c:1}
 ];
 
+let lvl=0,life=3,time=15,timer;
+
 function startGame(){
-  document.getElementById("menu").style.display="none";
-  document.getElementById("game").style.display="block";
-  loadLevel();
+ document.getElementById("start").classList.remove("active");
+ document.getElementById("game").classList.add("active");
+ load();
 }
 
-function loadLevel(){
-  if(level > 15){
-    alert("KAMU BERHASIL KABUR DARI SEKOLAH TERLARANG!");
-    location.reload();
-  }
-  document.getElementById("levelText").innerText="Level "+level;
-  document.getElementById("question").innerText=questions[level-1].q;
-
-  let ansDiv = document.getElementById("answers");
-  ansDiv.innerHTML="";
-  questions[level-1].a.forEach((ans,i)=>{
-    let btn=document.createElement("button");
-    btn.innerText=ans;
-    btn.onclick=()=>checkAnswer(i);
-    ansDiv.appendChild(btn);
-    ansDiv.appendChild(document.createElement("br"));
-  });
+function load(){
+ if(lvl>=levelData.length){
+  document.getElementById("game").classList.remove("active");
+  document.getElementById("end").classList.add("active");
+  return;
+ }
+ clearInterval(timer);
+ time=15;
+ let L=levelData[lvl];
+ document.getElementById("info").innerText=
+ `LEVEL ${lvl+1} ❤️${life} ⏱️${time}`;
+ document.getElementById("story").innerText=L.s;
+ document.getElementById("question").innerText=L.q;
+ let a=document.getElementById("answers");
+ a.innerHTML="";
+ L.a.forEach((x,i)=>{
+  let b=document.createElement("button");
+  b.innerText=x;
+  b.onclick=()=>cek(i);
+  a.appendChild(b);
+ });
+ timer=setInterval(()=>{
+  time--;
+  document.getElementById("info").innerText=
+  `LEVEL ${lvl+1} ❤️${life} ⏱️${time}`;
+  if(time<=0) kalah();
+ },1000);
 }
 
-function checkAnswer(i){
-  if(i===questions[level-1].c){
-    level++;
-    loadLevel();
-  } else {
-    jumpscare();
-  }
+function cek(i){
+ clearInterval(timer);
+ if(i===levelData[lvl].c){
+  lvl++; load();
+ } else kalah();
+}
+
+function kalah(){
+ life--;
+ jumpscare();
+ if(life<=0){
+  setTimeout(()=>{alert("GAME OVER");location.reload();},1200);
+ } else setTimeout(load,1200);
 }
 
 function jumpscare(){
-  document.getElementById("jumpscare").style.display="block";
-  document.getElementById("scream").play();
-  setTimeout(()=>{
-    alert("KAMU GAGAL!");
-    location.reload();
-  },1500);
+ document.getElementById("jumpscare").style.display="flex";
+ document.getElementById("sound").play();
+ setTimeout(()=>{
+  document.getElementById("jumpscare").style.display="none";
+ },1000);
 }
 </script>
 
