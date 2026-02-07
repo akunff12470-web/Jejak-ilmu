@@ -1,72 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>Jalan Ilmu</title>
-  <style>
-    body {
-      background-color: black;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-    }
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-      font-size: 16px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Jejak Ilmu</title>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: black;
+  color: white;
+  text-align: center;
+}
+#game, #jumpscare {
+  display: none;
+}
+button {
+  padding: 10px 20px;
+  font-size: 18px;
+  cursor: pointer;
+}
+#jumpscare {
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:black;
+}
+#jumpscare img {
+  width:100%;
+  height:100%;
+  object-fit: cover;
+}
+</style>
 </head>
+
 <body>
 
-<h1>👻 Jalan Ilmu</h1>
-<p id="story">Kamu terbangun di sekolah angker...</p>
-<p id="question"></p>
+<div id="menu">
+  <h1>👁️ JEJAK ILMU 👁️</h1>
+  <p>Game Horor Edukasi</p>
+  <button onclick="startGame()">Mulai Game</button>
+</div>
 
-<div id="buttons"></div>
+<div id="game">
+  <h2 id="levelText"></h2>
+  <p id="question"></p>
+  <div id="answers"></div>
+</div>
+
+<div id="jumpscare">
+  <img src="https://i.imgur.com/8Km9tLL.png">
+</div>
+
+<audio id="scream" src="https://www.myinstants.com/media/sounds/scream.mp3"></audio>
 
 <script>
 let level = 1;
 
-function loadLevel() {
-  const q = document.getElementById("question");
-  const b = document.getElementById("buttons");
+const questions = [
+  {q:"2 + 3 = ?", a:["4","5","6"], c:1},
+  {q:"Sinonim pintar?", a:["Bodoh","Cerdas","Lemah"], c:1},
+  {q:"5 x 4 = ?", a:["20","10","15"], c:0},
+  {q:"Ibu kota Indonesia?", a:["Bandung","Jakarta","Surabaya"], c:1},
+  {q:"Organ pernapasan?", a:["Paru-paru","Jantung","Hati"], c:0},
+  {q:"10 : 2 = ?", a:["3","5","6"], c:1},
+  {q:"Sinonim gelap?", a:["Terang","Hitam","Sunyi"], c:1},
+  {q:"Planet ke-3?", a:["Mars","Bumi","Venus"], c:1},
+  {q:"7 + 8 = ?", a:["14","15","16"], c:1},
+  {q:"Hewan herbivora?", a:["Singa","Sapi","Serigala"], c:1},
+  {q:"Air membeku pada?", a:["0°C","50°C","100°C"], c:0},
+  {q:"Presiden pertama RI?", a:["Habibie","Soekarno","Jokowi"], c:1},
+  {q:"12 x 2 = ?", a:["22","24","26"], c:1},
+  {q:"Alat indra melihat?", a:["Telinga","Hidung","Mata"], c:2},
+  {q:"Pancasila sila ke-1?", a:["Kemanusiaan","Ketuhanan","Persatuan"], c:1}
+];
 
-  if (level === 1) {
-    q.innerHTML = "Pancasila ada berapa sila?";
-    b.innerHTML = `
-      <button onclick="wrong()">4</button>
-      <button onclick="correct()">5</button>
-    `;
-  }
-
-  if (level === 2) {
-    q.innerHTML = "Ibu kota Indonesia adalah?";
-    b.innerHTML = `
-      <button onclick="correct()">Jakarta</button>
-      <button onclick="wrong()">Bandung</button>
-    `;
-  }
-
-  if (level === 3) {
-    document.body.innerHTML = `
-      <h1>🎉 SELAMAT</h1>
-      <p>Kamu berhasil keluar dari sekolah angker!</p>
-    `;
-  }
-}
-
-function correct() {
-  alert("✅ Benar! Kamu selamat sementara...");
-  level++;
+function startGame(){
+  document.getElementById("menu").style.display="none";
+  document.getElementById("game").style.display="block";
   loadLevel();
 }
 
-function wrong() {
-  alert("❌ Salah... suara langkah mendekat!");
+function loadLevel(){
+  if(level > 15){
+    alert("KAMU BERHASIL KABUR DARI SEKOLAH TERLARANG!");
+    location.reload();
+  }
+  document.getElementById("levelText").innerText="Level "+level;
+  document.getElementById("question").innerText=questions[level-1].q;
+
+  let ansDiv = document.getElementById("answers");
+  ansDiv.innerHTML="";
+  questions[level-1].a.forEach((ans,i)=>{
+    let btn=document.createElement("button");
+    btn.innerText=ans;
+    btn.onclick=()=>checkAnswer(i);
+    ansDiv.appendChild(btn);
+    ansDiv.appendChild(document.createElement("br"));
+  });
 }
 
-loadLevel();
+function checkAnswer(i){
+  if(i===questions[level-1].c){
+    level++;
+    loadLevel();
+  } else {
+    jumpscare();
+  }
+}
+
+function jumpscare(){
+  document.getElementById("jumpscare").style.display="block";
+  document.getElementById("scream").play();
+  setTimeout(()=>{
+    alert("KAMU GAGAL!");
+    location.reload();
+  },1500);
+}
 </script>
 
 </body>
