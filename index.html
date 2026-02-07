@@ -4,50 +4,80 @@
 <meta charset="UTF-8">
 <title>Jejak Terkunci</title>
 <style>
-body {
-  margin: 0;
-  background: black;
-  color: white;
-  overflow: hidden;
-  font-family: Arial, sans-serif;
-}
-#game {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  background: #050505;
-}
-.player {
-  width: 20px;
-  height: 20px;
-  background: white;
-  position: absolute;
-}
-.key { width: 15px; height: 15px; background: gold; position: absolute; }
-.motorKey { width: 18px; height: 18px; background: cyan; position: absolute; display: none; }
-.exit { width: 40px; height: 40px; background: green; position: absolute; display: none; }
+  body {
+    margin: 0;
+    background: black;
+    color: white;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
 
-.ghost {
-  width: 25px;
-  height: 25px;
-  position: absolute;
-}
-.red { background: red; }
-.shadow { background: purple; opacity: 0.6; }
-.guard { background: darkred; }
+  #game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: #050505;
+  }
 
-#ui { position: fixed; top: 10px; left: 10px; }
-#jumpscare {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: black;
-  color: red;
-  font-size: 60px;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
+  .player {
+    width: 20px;
+    height: 20px;
+    background: white;
+    position: absolute;
+    left: 50px;
+    top: 50px;
+  }
+
+  .key {
+    width: 15px;
+    height: 15px;
+    background: gold;
+    position: absolute;
+  }
+
+  .motorKey {
+    width: 18px;
+    height: 18px;
+    background: cyan;
+    position: absolute;
+    display: none;
+  }
+
+  .ghost {
+    width: 25px;
+    height: 25px;
+    background: red;
+    position: absolute;
+  }
+
+  #ui {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    font-size: 16px;
+  }
+
+  #jumpscare {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: black;
+    justify-content: center;
+    align-items: center;
+    font-size: 60px;
+    color: red;
+    z-index: 999;
+  }
+
+  #exit {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    width: 40px;
+    height: 40px;
+    background: green;
+    display: none;
+  }
 </style>
 </head>
 
@@ -55,19 +85,15 @@ body {
 
 <div id="game">
   <div class="player" id="player"></div>
-
-  <div class="ghost red" id="ghost1"></div>
-  <div class="ghost shadow" id="ghost2"></div>
-  <div class="ghost guard" id="ghost3" style="display:none"></div>
-
+  <div class="ghost" id="ghost"></div>
   <div class="motorKey" id="motorKey"></div>
-  <div class="exit" id="exit"></div>
+  <div id="exit"></div>
 </div>
 
 <div id="ui">
-❤️ <span id="life">5</span><br>
-🔑 <span id="keys">0</span>/10<br>
-🏍️ <span id="motor">❌</span>
+  ❤️ Nyawa: <span id="life">5</span><br>
+  🔑 Kunci: <span id="keys">0</span>/10<br>
+  🏍️ Kunci Motor: <span id="motor">❌</span>
 </div>
 
 <div id="jumpscare">👻</div>
@@ -75,107 +101,128 @@ body {
 <audio id="ambience" loop autoplay>
   <source src="https://www.soundjay.com/nature/crickets-1.mp3">
 </audio>
+
 <audio id="scream">
   <source src="https://www.soundjay.com/human/scream-01.mp3">
 </audio>
 
 <script>
 const player = document.getElementById("player");
-const g1 = document.getElementById("ghost1");
-const g2 = document.getElementById("ghost2");
-const g3 = document.getElementById("ghost3");
+const ghost = document.getElementById("ghost");
 const motorKey = document.getElementById("motorKey");
 const exit = document.getElementById("exit");
 const jumpscare = document.getElementById("jumpscare");
 const scream = document.getElementById("scream");
 
-let x=50,y=50, life=5, keys=0, hasMotor=false;
-let g1x=300,g1y=200, g2x=600,g2y=300, g3x=400,g3y=100;
+let x = 50, y = 50;
+let gx = 300, gy = 200;
+let life = 5;
+let keys = 0;
+let hasMotorKey = false;
 
-player.style.left=x+"px"; player.style.top=y+"px";
+ghost.style.left = gx + "px";
+ghost.style.top = gy + "px";
 
-for(let i=0;i<10;i++){
-  let k=document.createElement("div");
-  k.className="key";
-  k.style.left=Math.random()*(innerWidth-40)+"px";
-  k.style.top=Math.random()*(innerHeight-40)+"px";
-  game.appendChild(k);
+// BUAT 10 KUNCI
+for (let i = 0; i < 10; i++) {
+  const k = document.createElement("div");
+  k.className = "key";
+  k.style.left = Math.random() * (window.innerWidth - 50) + "px";
+  k.style.top = Math.random() * (window.innerHeight - 50) + "px";
+  document.getElementById("game").appendChild(k);
 }
 
-motorKey.style.left="80%"; motorKey.style.top="10%";
-exit.style.left="90%"; exit.style.top="80%";
+// POSISI KUNCI MOTOR
+motorKey.style.left = "80%";
+motorKey.style.top = "10%";
 
-document.addEventListener("keydown",e=>{
-  if(e.key==="w")y-=10;
-  if(e.key==="s")y+=10;
-  if(e.key==="a")x-=10;
-  if(e.key==="d")x+=10;
-  player.style.left=x+"px"; player.style.top=y+"px";
-  checkKey(); checkMotor(); checkExit();
+// GERAK PLAYER
+document.addEventListener("keydown", e => {
+  if (e.key === "w") y -= 10;
+  if (e.key === "s") y += 10;
+  if (e.key === "a") x -= 10;
+  if (e.key === "d") x += 10;
+
+  player.style.left = x + "px";
+  player.style.top = y + "px";
+
+  checkKey();
+  checkMotorKey();
+  checkExit();
 });
 
-setInterval(()=>{
-  // Ghost merah selalu kejar
-  g1x+=(x-g1x)*0.02; g1y+=(y-g1y)*0.02;
-  g1.style.left=g1x+"px"; g1.style.top=g1y+"px";
+// GHOST KEJAR PLAYER
+setInterval(() => {
+  gx += (x - gx) * 0.02;
+  gy += (y - gy) * 0.02;
 
-  // Ghost bayangan random
-  if(Math.random()<0.02){
-    g2x=Math.random()*innerWidth;
-    g2y=Math.random()*innerHeight;
-  }
-  g2.style.left=g2x+"px"; g2.style.top=g2y+"px";
+  ghost.style.left = gx + "px";
+  ghost.style.top = gy + "px";
 
-  // Ghost penjaga aktif akhir
-  if(keys>=10){
-    g3.style.display="block";
-    g3x+=(x-g3x)*0.03; g3y+=(y-g3y)*0.03;
-    g3.style.left=g3x+"px"; g3.style.top=g3y+"px";
-  }
-
-  if(hitCheck(g1x,g1y)||hitCheck(g2x,g2y)||hitCheck(g3x,g3y)){
+  if (Math.abs(x - gx) < 20 && Math.abs(y - gy) < 20) {
     hit();
   }
-},30);
+}, 30);
 
-function hitCheck(gx,gy){
-  return Math.abs(x-gx)<20 && Math.abs(y-gy)<20;
-}
+// AMBIL KUNCI
+function checkKey() {
+  document.querySelectorAll(".key").forEach(k => {
+    if (Math.abs(x - k.offsetLeft) < 20 &&
+        Math.abs(y - k.offsetTop) < 20) {
+      k.remove();
+      keys++;
+      document.getElementById("keys").innerText = keys;
 
-function checkKey(){
-  document.querySelectorAll(".key").forEach(k=>{
-    if(Math.abs(x-k.offsetLeft)<20 && Math.abs(y-k.offsetTop)<20){
-      k.remove(); keys++;
-      document.getElementById("keys").innerText=keys;
-      if(keys===10){ alert("Semua kunci didapat!"); motorKey.style.display="block"; }
+      if (keys === 10) {
+        alert("Semua kunci terkumpul!\nKunci motor muncul!");
+        motorKey.style.display = "block";
+      }
     }
   });
 }
 
-function checkMotor(){
-  if(!hasMotor && Math.abs(x-motorKey.offsetLeft)<20){
-    hasMotor=true; motorKey.style.display="none";
-    document.getElementById("motor").innerText="✔️";
-    alert("Kunci motor didapat! Cari pintu keluar!");
-    exit.style.display="block";
+// AMBIL KUNCI MOTOR
+function checkMotorKey() {
+  if (!hasMotorKey &&
+      Math.abs(x - motorKey.offsetLeft) < 20 &&
+      Math.abs(y - motorKey.offsetTop) < 20) {
+
+    hasMotorKey = true;
+    motorKey.style.display = "none";
+    document.getElementById("motor").innerText = "✔️";
+    alert("Kunci motor didapat!\nCari pintu keluar!");
+    exit.style.display = "block";
   }
 }
 
-function checkExit(){
-  if(hasMotor && Math.abs(x-exit.offsetLeft)<30){
-    alert("ENDING: KABUR\nKamu berhasil keluar!");
+// KELUAR SEKOLAH
+function checkExit() {
+  if (hasMotorKey &&
+      Math.abs(x - exit.offsetLeft) < 30 &&
+      Math.abs(y - exit.offsetTop) < 30) {
+    alert("ENDING: KABUR\nKamu berhasil keluar dari sekolah!");
     location.reload();
   }
 }
 
-function hit(){
-  life--; document.getElementById("life").innerText=life;
+// JUMPSCARE
+function hit() {
+  life--;
+  document.getElementById("life").innerText = life;
   scream.play();
-  jumpscare.style.display="flex";
-  setTimeout(()=>jumpscare.style.display="none",500);
-  x=50;y=50;
-  if(life<=0){ alert("ENDING: TERKUNCI SELAMANYA"); location.reload(); }
+
+  jumpscare.style.display = "flex";
+  setTimeout(() => jumpscare.style.display = "none", 500);
+
+  x = 50;
+  y = 50;
+
+  if (life <= 0) {
+    alert("ENDING: TERKUNCI SELAMANYA");
+    location.reload();
+  }
 }
 </script>
+
 </body>
 </html>
